@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 
 	"github.com/kshvakov/clickhouse"
 )
@@ -72,20 +73,18 @@ func listen(ch chan reqType) {
 }
 
 func aggregate(db *sql.DB, ch chan reqType) {
-	cnt := 100
 	parsedVals := make(map[string][]reqType)
 
 	for {
+		cnt := 1000
+		start := time.Now()
 
-		// TODO send by time
-		for cnt > 0 {
+		for cnt > 0 && time.Now().Sub(start).Seconds() < 1 {
 			parsed := <-ch
 
 			parsedVals[parsed.Query] = append(parsedVals[parsed.Query], parsed)
 			cnt--
 		}
-
-		cnt = 100
 
 		for k, v := range parsedVals {
 			// TODO retry
