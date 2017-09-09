@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-
 	"os"
 
 	"github.com/kshvakov/clickhouse"
