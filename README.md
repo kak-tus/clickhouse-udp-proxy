@@ -9,7 +9,7 @@ Proxy role - run near some writer and resend data to remote CickHouse.
 ## Run
 
 ```
-docker run --rm -it -e CLICKHOUSE_ADDR=127.0.0.1:9000 -p 9001:9001/udp kak-tus/clickhouse-udp-proxy
+docker run --rm -it -e CLICKHOUSE_ADDR=127.0.0.1:9000 -p 9001:9001/udp kaktuss/clickhouse-udp-proxy
 ```
 
 ## Packet format
