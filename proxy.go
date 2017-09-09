@@ -90,6 +90,7 @@ func aggregate(db *sql.DB, ch chan reqType) {
 		for k, v := range parsedVals {
 			// TODO retry
 			_ = send(db, k, v)
+			parsedVals[k] = parsedVals[k][:0]
 		}
 	}
 }
