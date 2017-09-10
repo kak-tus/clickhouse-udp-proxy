@@ -60,12 +60,14 @@ func listen(ch chan reqType) {
 		num, _, err := conn.ReadFrom(buf)
 		if err != nil {
 			log.Println(err)
+			continue
 		}
 
 		var parsed reqType
 		err = json.Unmarshal(buf[0:num], &parsed)
 		if err != nil {
 			log.Println(err)
+			continue
 		}
 
 		ch <- parsed

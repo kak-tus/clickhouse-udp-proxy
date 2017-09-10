@@ -1,3 +1,6 @@
+0.3 2017-09-10
+  - Small fixes in error processing.
+
 0.2 2017-09-10
   - Resend in period of 1 sec. if we have few data.
   - More items at once (100->1000).
