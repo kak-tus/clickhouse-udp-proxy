@@ -1,3 +1,6 @@
+0.4 2017-11-24
+  - Configurable batch and period.
+
 0.3 2017-09-10
   - Small fixes in error processing.
 

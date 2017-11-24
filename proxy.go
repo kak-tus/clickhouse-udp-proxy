@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/kshvakov/clickhouse"
@@ -77,11 +78,23 @@ func listen(ch chan reqType) {
 func aggregate(db *sql.DB, ch chan reqType) {
 	parsedVals := make(map[string][]reqType)
 
+	period, err := strconv.ParseUint(os.Getenv("PROXY_PERIOD"), 10, 64)
+	if err != nil {
+		log.Println(err)
+		period = 5
+	}
+
+	batch, err := strconv.ParseUint(os.Getenv("PROXY_BATCH"), 10, 64)
+	if err != nil {
+		log.Println(err)
+		batch = 10000
+	}
+
 	for {
-		cnt := 1000
+		cnt := batch
 		start := time.Now()
 
-		for cnt > 0 && time.Now().Sub(start).Seconds() < 1 {
+		for cnt > 0 && time.Now().Sub(start).Seconds() < float64(period) {
 			parsed := <-ch
 
 			parsedVals[parsed.Query] = append(parsedVals[parsed.Query], parsed)
