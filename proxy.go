@@ -33,16 +33,16 @@ func connectDB() *sql.DB {
 	addr := os.Getenv("CLICKHOUSE_ADDR")
 	db, err := sql.Open("clickhouse", "tcp://"+addr+"?write_timeout=20")
 	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
 
 	err = db.Ping()
 	if err != nil {
 		exception, ok := err.(*clickhouse.Exception)
 		if ok {
-			panic(fmt.Sprintf("[%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace))
+			log.Panicln(fmt.Sprintf("[%d] %s \n%s", exception.Code, exception.Message, exception.StackTrace))
 		} else {
-			panic(fmt.Sprintln(err))
+			log.Panicln(err)
 		}
 	}
 
@@ -50,9 +50,11 @@ func connectDB() *sql.DB {
 }
 
 func listen(ch chan reqType) {
+	l := log.New(os.Stderr, "", 0)
+
 	conn, err := net.ListenPacket("udp", ":9001")
 	if err != nil {
-		panic(err)
+		log.Panicln(err)
 	}
 
 	buf := make([]byte, 65535)
@@ -60,14 +62,14 @@ func listen(ch chan reqType) {
 	for {
 		num, _, err := conn.ReadFrom(buf)
 		if err != nil {
-			log.Println(err)
+			l.Println(err)
 			continue
 		}
 
 		var parsed reqType
 		err = json.Unmarshal(buf[0:num], &parsed)
 		if err != nil {
-			log.Println(err)
+			l.Println(err)
 			continue
 		}
 
@@ -76,17 +78,18 @@ func listen(ch chan reqType) {
 }
 
 func aggregate(db *sql.DB, ch chan reqType) {
+	l := log.New(os.Stderr, "", 0)
 	parsedVals := make(map[string][]reqType)
 
 	period, err := strconv.ParseUint(os.Getenv("PROXY_PERIOD"), 10, 64)
 	if err != nil {
-		log.Println(err)
+		l.Println(err)
 		period = 5
 	}
 
 	batch, err := strconv.ParseUint(os.Getenv("PROXY_BATCH"), 10, 64)
 	if err != nil {
-		log.Println(err)
+		l.Println(err)
 		batch = 10000
 	}
 
@@ -102,23 +105,25 @@ func aggregate(db *sql.DB, ch chan reqType) {
 		}
 
 		for k, v := range parsedVals {
-			// TODO retry
 			_ = send(db, k, v)
+			log.Println(fmt.Sprintf("Sended %d values for %q", len(parsedVals[k]), k))
 			parsedVals[k] = parsedVals[k][:0]
 		}
 	}
 }
 
 func send(db *sql.DB, query string, vals []reqType) error {
+	l := log.New(os.Stderr, "", 0)
+
 	tx, err := db.Begin()
 	if err != nil {
-		log.Println(err)
+		l.Println(err)
 		return err
 	}
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
-		log.Println(err)
+		l.Println(err)
 		return err
 	}
 
@@ -136,14 +141,14 @@ func send(db *sql.DB, query string, vals []reqType) error {
 		_, err := stmt.Exec(args...)
 
 		if err != nil {
-			log.Println(err)
+			l.Println(err)
 			return err
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		log.Println(err)
+		l.Println(err)
 		return err
 	}
 
