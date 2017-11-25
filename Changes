@@ -1,3 +1,6 @@
+0.6 2017-11-25
+  - Not send (and start transaction) with no values for query.
+
 0.5 2017-11-25
   - Better error logging.
   - Logging count of inserted values.

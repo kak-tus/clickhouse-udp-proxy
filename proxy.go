@@ -105,9 +105,11 @@ func aggregate(db *sql.DB, ch chan reqType) {
 		}
 
 		for k, v := range parsedVals {
-			_ = send(db, k, v)
-			log.Println(fmt.Sprintf("Sended %d values for %q", len(parsedVals[k]), k))
-			parsedVals[k] = parsedVals[k][:0]
+			if len(parsedVals[k]) > 0 {
+				_ = send(db, k, v)
+				log.Println(fmt.Sprintf("Sended %d values for %q", len(parsedVals[k]), k))
+				parsedVals[k] = parsedVals[k][:0]
+			}
 		}
 	}
 }
