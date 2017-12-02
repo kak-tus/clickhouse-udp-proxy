@@ -35,7 +35,9 @@ func main() {
 
 func connectDB() {
 	addr := os.Getenv("CLICKHOUSE_ADDR")
-	db, err := sql.Open("clickhouse", "tcp://"+addr+"?write_timeout=20")
+
+	var err error
+	db, err = sql.Open("clickhouse", "tcp://"+addr+"?write_timeout=20")
 	if err != nil {
 		log.Panicln(err)
 	}
