@@ -7,7 +7,9 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/kshvakov/clickhouse"
@@ -23,12 +25,15 @@ type reqType struct {
 var db *sql.DB
 var logger = log.New(os.Stdout, "", log.LstdFlags)
 var errLogger = log.New(os.Stderr, "", log.LstdFlags)
+var sigs = make(chan os.Signal, 1)
 
 func main() {
 	connectDB()
 
 	ch := make(chan reqType)
 	go aggregate(ch)
+
+	signal.Notify(sigs, syscall.SIGTERM, syscall.SIGINT)
 
 	listen(ch)
 }
@@ -94,11 +99,19 @@ func aggregate(ch chan reqType) {
 		batch = 10000
 	}
 
+	needStop := false
+
+	go func() {
+		sig := <-sigs
+		logger.Println("Stop signal: ", sig)
+		needStop = true
+	}()
+
 	for {
 		cnt := batch
 		start := time.Now()
 
-		for cnt > 0 && time.Now().Sub(start).Seconds() < float64(period) {
+		for cnt > 0 && time.Now().Sub(start).Seconds() < float64(period) && !needStop {
 			parsed := <-ch
 
 			parsedVals[parsed.Query] = append(parsedVals[parsed.Query], parsed)
@@ -111,6 +124,10 @@ func aggregate(ch chan reqType) {
 				logger.Println(fmt.Sprintf("Sended %d values for %q", len(parsedVals[k]), k))
 				parsedVals[k] = parsedVals[k][:0]
 			}
+		}
+
+		if needStop {
+			return
 		}
 	}
 }
