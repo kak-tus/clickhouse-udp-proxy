@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"reflect"
 	"strconv"
 	"time"
 
@@ -132,20 +133,26 @@ func send(query string, vals []reqType) error {
 
 	for _, val := range vals {
 		var args []interface{}
+		argErr := 0
 
 		for i := 0; i < len(val.Data); i++ {
-			if val.Types[i] == "int" {
+			if val.Types[i] == "int" && reflect.TypeOf(val.Data[i]).Kind() == reflect.String {
+				errLogger.Println(fmt.Sprintf("Got type string, but waited int: %q", val))
+				argErr = 1
+			} else if val.Types[i] == "int" {
 				args = append(args, int64(val.Data[i].(float64)))
 			} else {
 				args = append(args, val.Data[i])
 			}
 		}
 
-		_, err := stmt.Exec(args...)
+		if argErr == 0 {
+			_, err := stmt.Exec(args...)
 
-		if err != nil {
-			errLogger.Println(err)
-			return err
+			if err != nil {
+				errLogger.Println(err)
+				return err
+			}
 		}
 	}
 
