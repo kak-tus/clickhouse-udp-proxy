@@ -21,11 +21,12 @@ RUN \
 COPY --from=build /go/bin/proxy /usr/local/bin/proxy
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 
-ENV USER_UID=1000
-ENV USER_GID=1000
+ENV \
+  USER_UID=1000 \
+  USER_GID=1000 \
 
-ENV CLICKHOUSE_ADDR=
-ENV PROXY_PERIOD=60
-ENV PROXY_BATCH=10000
+  CLICKHOUSE_ADDR= \
+  PROXY_PERIOD=60 \
+  PROXY_BATCH=10000
 
 CMD ["/usr/local/bin/entrypoint.sh"]

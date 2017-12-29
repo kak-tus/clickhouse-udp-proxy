@@ -1,3 +1,6 @@
+0.12 2017-12-29
+  - Fix possible memory leak.
+
 0.10 2017-12-20
   - Fix panic of type conversion.
   - Log error on incompatible got and waited type.

@@ -83,8 +83,6 @@ func listen(ch chan reqType) {
 }
 
 func aggregate(ch chan reqType) {
-	parsedVals := make(map[string][]reqType)
-
 	period, err := strconv.ParseUint(os.Getenv("PROXY_PERIOD"), 10, 64)
 	if err != nil {
 		errLogger.Println(err)
@@ -98,6 +96,8 @@ func aggregate(ch chan reqType) {
 	}
 
 	for {
+		parsedVals := make(map[string][]reqType)
+
 		cnt := batch
 		start := time.Now()
 
@@ -112,7 +112,6 @@ func aggregate(ch chan reqType) {
 			if len(parsedVals[k]) > 0 {
 				_ = send(k, v)
 				logger.Println(fmt.Sprintf("Sended %d values for %q", len(parsedVals[k]), k))
-				parsedVals[k] = parsedVals[k][:0]
 			}
 		}
 	}
