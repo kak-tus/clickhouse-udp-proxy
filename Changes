@@ -1,3 +1,6 @@
+0.13 2018-03-02
+  - Bigger write timeout.
+
 0.12 2018-03-01
   - Fix memory leak.
 
