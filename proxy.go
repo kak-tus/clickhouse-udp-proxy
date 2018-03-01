@@ -111,7 +111,7 @@ func aggregate(ch chan reqType) {
 		parsedVals[parsed.Query][parsedCnts[parsed.Query]-1] = parsed
 
 		if parsedCnts[parsed.Query] >= int(batch) {
-			_ = send(parsed.Query, parsedVals[parsed.Query])
+			_ = send(parsed.Query, parsedVals[parsed.Query][0:parsedCnts[parsed.Query]])
 			logger.Println(fmt.Sprintf("Sended %d values for %q", parsedCnts[parsed.Query], parsed.Query))
 			parsedCnts[parsed.Query] = 0
 		}
@@ -119,7 +119,7 @@ func aggregate(ch chan reqType) {
 		if time.Now().Sub(start).Seconds() >= float64(period) {
 			for k, v := range parsedVals {
 				if parsedCnts[k] > 0 {
-					_ = send(k, v)
+					_ = send(k, v[0:parsedCnts[k]])
 					logger.Println(fmt.Sprintf("Sended %d values for %q", parsedCnts[k], k))
 					parsedCnts[k] = 0
 				}
