@@ -95,24 +95,37 @@ func aggregate(ch chan reqType) {
 		batch = 10000
 	}
 
+	parsedVals := make(map[string][]reqType)
+	parsedCnts := make(map[string]int)
+
+	start := time.Now()
+
 	for {
-		parsedVals := make(map[string][]reqType)
+		parsed := <-ch
 
-		cnt := batch
-		start := time.Now()
-
-		for cnt > 0 && time.Now().Sub(start).Seconds() < float64(period) {
-			parsed := <-ch
-
-			parsedVals[parsed.Query] = append(parsedVals[parsed.Query], parsed)
-			cnt--
+		if parsedVals[parsed.Query] == nil {
+			parsedVals[parsed.Query] = make([]reqType, batch)
 		}
 
-		for k, v := range parsedVals {
-			if len(parsedVals[k]) > 0 {
-				_ = send(k, v)
-				logger.Println(fmt.Sprintf("Sended %d values for %q", len(parsedVals[k]), k))
+		parsedCnts[parsed.Query]++
+		parsedVals[parsed.Query][parsedCnts[parsed.Query]-1] = parsed
+
+		if parsedCnts[parsed.Query] >= int(batch) {
+			_ = send(parsed.Query, parsedVals[parsed.Query])
+			logger.Println(fmt.Sprintf("Sended %d values for %q", parsedCnts[parsed.Query], parsed.Query))
+			parsedCnts[parsed.Query] = 0
+		}
+
+		if time.Now().Sub(start).Seconds() >= float64(period) {
+			for k, v := range parsedVals {
+				if parsedCnts[k] > 0 {
+					_ = send(k, v)
+					logger.Println(fmt.Sprintf("Sended %d values for %q", parsedCnts[k], k))
+					parsedCnts[k] = 0
+				}
 			}
+
+			start = time.Now()
 		}
 	}
 }
