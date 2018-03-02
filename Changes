@@ -1,3 +1,6 @@
+0.14 2018-03-02
+  - Temporary enable profiling.
+
 0.13 2018-03-02
   - Bigger write timeout.
 
