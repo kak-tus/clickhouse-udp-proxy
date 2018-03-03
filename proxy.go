@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"reflect"
 	"strconv"
@@ -63,8 +61,6 @@ func listen(ch chan reqType) {
 	if err != nil {
 		logger.Panicln(err)
 	}
-
-	go http.ListenAndServe("0.0.0.0:8080", nil)
 
 	buf := make([]byte, 65535)
 
