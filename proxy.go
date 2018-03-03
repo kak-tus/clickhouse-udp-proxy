@@ -7,8 +7,11 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"reflect"
 	"strconv"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/kshvakov/clickhouse"
@@ -28,10 +31,14 @@ var errLogger = log.New(os.Stderr, "", log.LstdFlags)
 func main() {
 	connectDB()
 
-	ch := make(chan reqType)
-	go aggregate(ch)
+	ch := make(chan reqType, 100000)
+	stopChan := make(chan int)
+	go aggregate(ch, stopChan)
 
-	listen(ch)
+	go listen(ch)
+
+	<-stopChan
+	logger.Println("Exit")
 }
 
 func connectDB() {
@@ -63,13 +70,41 @@ func listen(ch chan reqType) {
 	}
 
 	buf := make([]byte, 65535)
+	mutex := &sync.Mutex{}
+
+	stopSignal := make(chan os.Signal, 1)
+	signal.Notify(stopSignal, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-stopSignal
+		logger.Println("Got stop signal, stop listening")
+
+		mutex.Lock()
+		conn.Close()
+		conn = nil
+		mutex.Unlock()
+	}()
 
 	for {
-		num, _, err := conn.ReadFrom(buf)
+		mutex.Lock()
+
+		if conn == nil {
+			break
+		}
+
+		err = conn.SetReadDeadline(time.Now().Add(1 * time.Second))
 		if err != nil {
-			errLogger.Println(err)
+			mutex.Unlock()
 			continue
 		}
+
+		num, _, err := conn.ReadFrom(buf)
+		if err != nil {
+			mutex.Unlock()
+			continue
+		}
+
+		mutex.Unlock()
 
 		var parsed reqType
 		err = json.Unmarshal(buf[0:num], &parsed)
@@ -80,9 +115,12 @@ func listen(ch chan reqType) {
 
 		ch <- parsed
 	}
+
+	logger.Println("Close channel")
+	close(ch)
 }
 
-func aggregate(ch chan reqType) {
+func aggregate(ch chan reqType, stopChan chan int) {
 	period, err := strconv.ParseUint(os.Getenv("PROXY_PERIOD"), 10, 64)
 	if err != nil {
 		errLogger.Println(err)
@@ -101,22 +139,24 @@ func aggregate(ch chan reqType) {
 	start := time.Now()
 
 	for {
-		parsed := <-ch
+		parsed, more := <-ch
 
-		if parsedVals[parsed.Query] == nil {
-			parsedVals[parsed.Query] = make([]reqType, batch)
+		if more {
+			if parsedVals[parsed.Query] == nil {
+				parsedVals[parsed.Query] = make([]reqType, batch)
+			}
+
+			parsedCnts[parsed.Query]++
+			parsedVals[parsed.Query][parsedCnts[parsed.Query]-1] = parsed
+
+			if parsedCnts[parsed.Query] >= int(batch) {
+				_ = send(parsed.Query, parsedVals[parsed.Query][0:parsedCnts[parsed.Query]])
+				logger.Println(fmt.Sprintf("Sended %d values for %q", parsedCnts[parsed.Query], parsed.Query))
+				parsedCnts[parsed.Query] = 0
+			}
 		}
 
-		parsedCnts[parsed.Query]++
-		parsedVals[parsed.Query][parsedCnts[parsed.Query]-1] = parsed
-
-		if parsedCnts[parsed.Query] >= int(batch) {
-			_ = send(parsed.Query, parsedVals[parsed.Query][0:parsedCnts[parsed.Query]])
-			logger.Println(fmt.Sprintf("Sended %d values for %q", parsedCnts[parsed.Query], parsed.Query))
-			parsedCnts[parsed.Query] = 0
-		}
-
-		if time.Now().Sub(start).Seconds() >= float64(period) {
+		if time.Now().Sub(start).Seconds() >= float64(period) || !more {
 			for k, v := range parsedVals {
 				if parsedCnts[k] > 0 {
 					_ = send(k, v[0:parsedCnts[k]])
@@ -126,6 +166,12 @@ func aggregate(ch chan reqType) {
 			}
 
 			start = time.Now()
+		}
+
+		if !more {
+			logger.Println("No more messages")
+			stopChan <- 1
+			break
 		}
 	}
 }

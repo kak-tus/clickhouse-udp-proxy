@@ -1,5 +1,6 @@
 0.15 2018-03-02
   - Disable profiling, memory leak found in CH library.
+  - Correct program stop.
 
 0.14 2018-03-02
   - Temporary enable profiling.
