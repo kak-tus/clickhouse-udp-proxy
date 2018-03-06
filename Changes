@@ -1,3 +1,6 @@
+0.16 2018-03-06
+  - Use rollback (fixed in latest version of CH library) to prevent memory leak.
+
 0.15 2018-03-02
   - Disable profiling, memory leak found in CH library.
   - Correct program stop.

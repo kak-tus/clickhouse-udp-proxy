@@ -185,6 +185,7 @@ func send(query string, vals []reqType) error {
 
 	stmt, err := tx.Prepare(query)
 	if err != nil {
+		tx.Rollback()
 		errLogger.Println(err)
 		return err
 	}
@@ -208,6 +209,7 @@ func send(query string, vals []reqType) error {
 			_, err := stmt.Exec(args...)
 
 			if err != nil {
+				tx.Rollback()
 				errLogger.Println(err)
 				return err
 			}
