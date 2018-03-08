@@ -1,8 +1,8 @@
-FROM golang:1.10 AS build
+FROM golang:1.10-alpine AS build
 
 WORKDIR /go/src/proxy
 COPY proxy.go proxy.go
-RUN go get
+RUN apk add --no-cache git && go get
 
 FROM alpine:3.7
 
