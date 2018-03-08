@@ -1,17 +1,10 @@
-FROM golang:alpine AS build
+FROM golang:1.10 AS build
 
-COPY proxy.go /go/src/proxy/proxy.go
+WORKDIR /go/src/proxy
+COPY proxy.go proxy.go
+RUN go get
 
-RUN \
-  apk add --no-cache --virtual .build-deps \
-    git \
-  \
-  && cd /go/src/proxy \
-  && go get \
-  \
-  && apk del .build-deps
-
-FROM alpine:3.6
+FROM alpine:3.7
 
 RUN \
   apk add --no-cache \
@@ -28,5 +21,7 @@ ENV \
   CLICKHOUSE_ADDR= \
   PROXY_PERIOD=60 \
   PROXY_BATCH=10000
+
+EXPOSE 9001
 
 CMD ["/usr/local/bin/entrypoint.sh"]

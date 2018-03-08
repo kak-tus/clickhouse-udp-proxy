@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"reflect"
@@ -36,6 +37,7 @@ func main() {
 	go aggregate(ch, stopChan)
 
 	go listen(ch)
+	go healthcheck()
 
 	<-stopChan
 	logger.Println("Exit")
@@ -66,7 +68,7 @@ func connectDB() {
 func listen(ch chan reqType) {
 	conn, err := net.ListenPacket("udp", ":9001")
 	if err != nil {
-		logger.Panicln(err)
+		log.Panicln(err)
 	}
 
 	buf := make([]byte, 65535)
@@ -77,7 +79,7 @@ func listen(ch chan reqType) {
 
 	go func() {
 		<-stopSignal
-		logger.Println("Got stop signal, stop listening")
+		logger.Println("Got stop signal, stop listening UDP")
 
 		mutex.Lock()
 		conn.Close()
@@ -223,4 +225,38 @@ func send(query string, vals []reqType) error {
 	}
 
 	return nil
+}
+
+func healthcheck() {
+	srv := &http.Server{Addr: ":9001"}
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		err := db.Ping()
+		if err != nil {
+			errLogger.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "err")
+			return
+		}
+
+		fmt.Fprintf(w, "ok")
+	})
+
+	stopSignal := make(chan os.Signal, 1)
+	signal.Notify(stopSignal, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-stopSignal
+		logger.Println("Got stop signal, stop listening HTTP")
+
+		err := srv.Shutdown(nil)
+		if err != nil {
+			errLogger.Println(err)
+		}
+	}()
+
+	err := srv.ListenAndServe()
+	if err != nil && err != http.ErrServerClosed {
+		log.Panicln(err)
+	}
 }

@@ -1,3 +1,6 @@
+0.17 2018-03-06
+  - HTTP healthcheck support.
+
 0.16 2018-03-06
   - Use rollback (fixed in latest version of CH library) to prevent memory leak.
 

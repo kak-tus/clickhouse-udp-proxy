@@ -32,3 +32,8 @@ If you set int type - value will be converted to int. Any other type will be
 ignored (they extracted correctly).
 
 Send example see at dev/test.pl
+
+## Healthcheck
+
+Service listens at 9001 TCP port and response to HTTP queries with code 200 or
+code 500.
