@@ -231,15 +231,19 @@ func healthcheck() {
 	srv := &http.Server{Addr: ":9001"}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		err := db.Ping()
-		if err != nil {
+		for i := 0; i < 10; i++ {
+			err := db.Ping()
+			if err == nil {
+				fmt.Fprintf(w, "ok")
+				return
+			}
+
 			errLogger.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "err")
-			return
+			time.Sleep(time.Second)
 		}
 
-		fmt.Fprintf(w, "ok")
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(w, "err")
 	})
 
 	stopSignal := make(chan os.Signal, 1)

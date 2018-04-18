@@ -1,3 +1,6 @@
+0.18 2018-03-06
+  - More stable healthcheck.
+
 0.17 2018-03-06
   - HTTP healthcheck support.
 
