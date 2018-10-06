@@ -1,6 +1,6 @@
 FROM golang:1.10.3-alpine3.8 AS build
 
-WORKDIR /go/src/clickhouse-udp-proxy
+WORKDIR /go/src/github.com/kak-tus/clickhouse-udp-proxy
 
 COPY listener ./listener
 COPY vendor ./vendor
