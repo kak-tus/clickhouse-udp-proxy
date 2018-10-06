@@ -1,7 +1,8 @@
-1.0.0 2018-10-06
+v1.0.0 2018-10-06
   - Update Alpine to 3.8.
   - Use app environment.
   - Remove direct ClickHouse support, write to CH with Corrie.
+  - Use semver.
 
 0.18 2018-03-06
   - More stable healthcheck.
