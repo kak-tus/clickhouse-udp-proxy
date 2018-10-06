@@ -1,27 +1,29 @@
-FROM golang:1.10-alpine AS build
+FROM golang:1.10.3-alpine3.8 AS build
 
-WORKDIR /go/src/proxy
-COPY proxy.go proxy.go
-RUN apk add --no-cache git && go get
+WORKDIR /go/src/clickhouse-udp-proxy
 
-FROM alpine:3.7
+COPY listener ./listener
+COPY vendor ./vendor
+COPY main.go main.go
+
+RUN go install
+
+FROM alpine:3.8
 
 RUN \
-  apk add --no-cache \
-    su-exec \
-    tzdata
+  adduser -DH user
 
-COPY --from=build /go/bin/proxy /usr/local/bin/proxy
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY --from=build /go/bin/clickhouse-udp-proxy /usr/local/bin/clickhouse-udp-proxy
+COPY etc /etc/
 
 ENV \
-  USER_UID=1000 \
-  USER_GID=1000 \
-  \
-  CLICKHOUSE_ADDR= \
-  PROXY_PERIOD=60 \
-  PROXY_BATCH=10000
+  PROXY_RABBITMQ_USER=\
+  PROXY_RABBITMQ_PASSWORD=\
+  PROXY_RABBITMQ_ADDR=\
+  PROXY_RABBITMQ_VHOST=
 
-EXPOSE 9001
+EXPOSE 9000 9001
 
-CMD ["/usr/local/bin/entrypoint.sh"]
+USER user
+
+CMD ["/usr/local/bin/clickhouse-udp-proxy"]
