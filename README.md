@@ -2,14 +2,24 @@
 
 Simple UDP proxy for ClickHouse.
 
-It accepts UDP packets, aggregates it and resend to ClickHouse by TCP.
+It accepts UDP packets, send it to RabbitMQ in Corrie format. Then Corrie write them to ClickHouse.
 
-Proxy role - run near some writer and resend data to remote CickHouse.
+Proxy role - run near some writer and accept metrics in UDP packets. That can be added at any code (sync or async) without any code refactoring.
+
+Best idea - write to Corrie directly, but sometimes (in Perl code) it is not possible.
+
+## Configuration
+
+```
+PROXY_RABBITMQ_ADDR=rabbitmq.example.com:5672
+PROXY_RABBITMQ_VHOST=corrie
+PROXY_RABBITMQ_USER=corrie
+PROXY_RABBITMQ_PASSWORD=somepassword
 
 ## Run
 
 ```
-docker run --rm -it -e CLICKHOUSE_ADDR=127.0.0.1:9000 -p 9001:9001/udp kaktuss/clickhouse-udp-proxy
+docker run --rm -it -p 9001:9001/udp -p 9000:9000/tcp kaktuss/clickhouse-udp-proxy
 ```
 
 ## Packet format
