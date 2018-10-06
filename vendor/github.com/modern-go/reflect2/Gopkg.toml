@@ -24,6 +24,11 @@
 #   go-tests = true
 #   unused-packages = true
 
+ignored = []
+
+[[constraint]]
+  name = "github.com/modern-go/concurrent"
+  version = "1.0.0"
 
 [prune]
   go-tests = true
