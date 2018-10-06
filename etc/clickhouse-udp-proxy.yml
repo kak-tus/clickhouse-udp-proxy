@@ -1,0 +1,18 @@
+healthcheck:
+  listen: ':9000'
+
+log:
+  tag: clickhouse.udp-proxy
+  level: debug
+  output: stdsep
+  format: json
+  formatConfig:
+    colors: false
+    disableTimestamp: true
+
+listener:
+  Rabbit:
+    URI: 'amqp://${PROXY_RABBITMQ_USER}:${PROXY_RABBITMQ_PASSWORD}@${PROXY_RABBITMQ_ADDR}/${PROXY_RABBITMQ_VHOST}'
+    QueueName: messages
+    MaxShard: 2
+  Port: 9001
