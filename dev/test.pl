@@ -16,9 +16,9 @@ my $sock = IO::Socket::INET->new(
 
 for ( 1 .. 100 ) {
   my %val = (
-    query   => 'INSERT INTO test (dt_part,dt,id) VALUES (?,?,?);',
-    data    => [ "2017-09-09", "2017-09-09 12:26:03", $_ ],
-    types   => [ "string", "string", "int" ],
+    query   => 'INSERT INTO test (dt_part,dt,id,fl) VALUES (?,?,?);',
+    data    => [ "2017-09-09", "2017-09-09 12:26:03", $_, 1.23 ],
+    types   => [ "string", "string", "int", "float" ],
     version => 1,
   );
 

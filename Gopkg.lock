@@ -60,6 +60,12 @@
   version = "v1.1.5"
 
 [[projects]]
+  name = "github.com/kak-tus/corrie"
+  packages = ["message"]
+  revision = "b70f63dc29c15cc9728c7cb84c9a984180f41870"
+  version = "v0.4.3"
+
+[[projects]]
   name = "github.com/kak-tus/healthcheck"
   packages = ["."]
   revision = "5f3713b5d728cc0f1c0d5bbfbadb9bbf99e2576f"
@@ -123,6 +129,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e5afae4a641e70bc488cc4e6de9e3a3c4f1696819d71d95b8e560010e58c2dfd"
+  inputs-digest = "d650fb13ae404920ea564e3ddff504f2b33cd729518cccdaeee12a629317122a"
   solver-name = "gps-cdcl"
   solver-version = 1

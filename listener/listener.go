@@ -13,6 +13,7 @@ import (
 	"git.aqq.me/go/retrier"
 	"github.com/iph0/conf"
 	jsoniter "github.com/json-iterator/go"
+	"github.com/kak-tus/corrie/message"
 	"github.com/streadway/amqp"
 )
 
@@ -129,9 +130,17 @@ func (l *Listener) Start() {
 			continue
 		}
 
-		// Unmarshal only to test message for correct format
-		// It is compatible with corrie format
 		err = decoder.Unmarshal(buf[0:num], &parsed)
+		if err != nil {
+			l.logger.Error(err)
+			continue
+		}
+
+		body, err := message.Message{
+			Query: parsed.Query,
+			Data:  parsed.Data,
+		}.Encode()
+
 		if err != nil {
 			l.logger.Error(err)
 			continue
@@ -142,7 +151,7 @@ func (l *Listener) Start() {
 				RoutingKey: l.config.Rabbit.QueueName,
 				Publishing: amqp.Publishing{
 					ContentType:  "text/plain",
-					Body:         buf[0:num],
+					Body:         body,
 					DeliveryMode: amqp.Persistent,
 				},
 			},
