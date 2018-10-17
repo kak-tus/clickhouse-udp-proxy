@@ -97,6 +97,7 @@ func (l *Listener) Start() {
 			Destinations:      []*nanachi.Destination{dest},
 			Mandatory:         true,
 			PendingBufferSize: 1000000,
+			Confirm:           true,
 		},
 	)
 

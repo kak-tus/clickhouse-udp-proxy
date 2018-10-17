@@ -1,3 +1,6 @@
+v1.0.3 2018-10-17
+  - Fix memory leak.
+
 v1.0.2 2018-10-17
   - Fix possible send deadlock.
   - Bigger possible memory usage.
