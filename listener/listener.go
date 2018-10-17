@@ -95,9 +95,8 @@ func (l *Listener) Start() {
 	producer := client.NewSmartProducer(
 		nanachi.SmartProducerConfig{
 			Destinations:      []*nanachi.Destination{dest},
-			Confirm:           true,
 			Mandatory:         true,
-			PendingBufferSize: 1000,
+			PendingBufferSize: 1000000,
 		},
 	)
 
