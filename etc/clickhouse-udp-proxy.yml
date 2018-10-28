@@ -11,8 +11,12 @@ log:
     disableTimestamp: true
 
 listener:
-  Rabbit:
-    URI: 'amqp://${PROXY_RABBITMQ_USER}:${PROXY_RABBITMQ_PASSWORD}@${PROXY_RABBITMQ_ADDR}/${PROXY_RABBITMQ_VHOST}'
-    QueueName: messages
-    MaxShard: 2
-  Port: 9001
+  port: 9001
+  redis:
+    addrs: { _ref: { name: "PROXY_REDIS_ADDR" } }
+  consumer: { _ref: { name: "PROXY_CONSUMER_NAME" } }
+  shardsCount: { _ref: { name: "PROXY_SHARDS_COUNT", default: 10 } }
+  prefetchCount: { _ref: { name: "PROXY_PREFETCH_COUNT", default: 30000 } }
+  pendingBufferSize: { _ref: { name: "PROXY_PENDING_BUFFER_SIZE", default: 1000000 } }
+  pipeBufferSize: { _ref: { name: "PROXY_PIPE_BUFFER_SIZE", default: 50000 } }
+

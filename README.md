@@ -2,19 +2,21 @@
 
 Simple UDP proxy for ClickHouse.
 
-It accepts UDP packets, send it to RabbitMQ in Corrie format. Then Corrie write them to ClickHouse.
+It accepts UDP packets, send it to Redis Cluster in Ruthie format with Ami client. Then Ruthie write them to ClickHouse.
 
 Proxy role - run near some writer and accept metrics in UDP packets. That can be added at any code (sync or async) without any code refactoring.
 
-Best idea - write to Corrie directly, but sometimes (in Perl code) it is not possible.
+Best idea - write to Ruthie directly, but sometimes (in Perl code) it is not possible.
 
 ## Configuration
 
 ```
-PROXY_RABBITMQ_ADDR=rabbitmq.example.com:5672
-PROXY_RABBITMQ_VHOST=corrie
-PROXY_RABBITMQ_USER=corrie
-PROXY_RABBITMQ_PASSWORD=somepassword
+PROXY_REDIS_ADDR=172.17.0.1:7000
+PROXY_CONSUMER_NAME=alice
+PROXY_SHARDS_COUNT=10
+PROXY_PREFETCH_COUNT=30000
+PROXY_PENDING_BUFFER_SIZE=1000000
+PROXY_PIPE_BUFFER_SIZE=50000
 
 ## Run
 

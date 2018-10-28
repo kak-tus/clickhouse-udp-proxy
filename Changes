@@ -1,3 +1,6 @@
+v2.0.0 2018-10-17
+  - Swithed to Ruthie - Redis Cluster based writer.
+
 v1.0.3 2018-10-17
   - Fix memory leak.
 
