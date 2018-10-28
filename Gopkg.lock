@@ -65,8 +65,8 @@
 [[projects]]
   name = "github.com/kak-tus/ami"
   packages = ["."]
-  revision = "5df77e7d1fcf22d2aa5b18e2277928a62c704c75"
-  version = "v0.1.5"
+  revision = "52fbd9fd81268b4363ada45f66a85bb6d36c5030"
+  version = "v0.1.6"
 
 [[projects]]
   name = "github.com/kak-tus/healthcheck"
@@ -132,6 +132,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8f1874470fadad01de7f2311f8df3a3c1d4e9bc520265a3798f4c2d13b061a2f"
+  inputs-digest = "868a878cd0e401b022e3a212399e520070109c84e8c6b4f7a7aeb86833e86f83"
   solver-name = "gps-cdcl"
   solver-version = 1

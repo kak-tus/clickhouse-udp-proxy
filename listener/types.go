@@ -12,16 +12,14 @@ type Listener struct {
 	logger *zap.SugaredLogger
 	config listenerConfig
 	m      *sync.Mutex
-	qu     *ami.Qu
+	pr     *ami.Producer
 	stop   bool
 }
 
 type listenerConfig struct {
 	Port              string
 	Redis             redisConfig
-	Consumer          string
 	ShardsCount       int8
-	PrefetchCount     int64
 	PendingBufferSize int64
 	PipeBufferSize    int64
 }

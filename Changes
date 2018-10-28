@@ -1,4 +1,8 @@
-v2.0.0 2018-10-17
+v2.0.1 2018-10-28
+  - Update Ami version.
+  - Remove PROXY_CONSUMER_NAME and PROXY_PREFETCH_COUNT from docker image.
+
+v2.0.0 2018-10-28
   - Swithed to Ruthie - Redis Cluster based writer.
 
 v1.0.3 2018-10-17

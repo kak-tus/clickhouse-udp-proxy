@@ -31,13 +31,10 @@ func init() {
 
 			addrs := strings.Split(cnf.Redis.Addrs, ",")
 
-			qu, err := ami.NewQu(
-				ami.Options{
+			pr, err := ami.NewProducer(
+				ami.ProducerOptions{
 					Name:              "ruthie",
-					Consumer:          cnf.Consumer,
 					ShardsCount:       cnf.ShardsCount,
-					PrefetchCount:     cnf.PrefetchCount,
-					Block:             time.Second,
 					PendingBufferSize: cnf.PendingBufferSize,
 					PipeBufferSize:    cnf.PipeBufferSize,
 					PipePeriod:        time.Microsecond * 10,
@@ -54,7 +51,7 @@ func init() {
 				logger: applog.GetLogger().Sugar(),
 				m:      &sync.Mutex{},
 				config: cnf,
-				qu:     qu,
+				pr:     pr,
 			}
 
 			lstn.logger.Info("Started listener")
@@ -68,7 +65,7 @@ func init() {
 			lstn.logger.Info("Stop listener")
 			lstn.stop = true
 			lstn.m.Lock()
-			lstn.qu.Close()
+			lstn.pr.Close()
 			lstn.logger.Info("Stopped listener")
 			return nil
 		},
@@ -125,7 +122,7 @@ func (l *Listener) Start() {
 			continue
 		}
 
-		l.qu.Send(body)
+		l.pr.Send(body)
 	}
 
 	conn.Close()
