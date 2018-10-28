@@ -3,7 +3,7 @@ package listener
 import (
 	"sync"
 
-	"git.aqq.me/go/nanachi"
+	"github.com/kak-tus/ami"
 	"go.uber.org/zap"
 )
 
@@ -12,19 +12,22 @@ type Listener struct {
 	logger *zap.SugaredLogger
 	config listenerConfig
 	m      *sync.Mutex
-	client *nanachi.Client
+	qu     *ami.Qu
 	stop   bool
 }
 
 type listenerConfig struct {
-	Rabbit rabbitConfig
-	Port   string
+	Port              string
+	Redis             redisConfig
+	Consumer          string
+	ShardsCount       int8
+	PrefetchCount     int64
+	PendingBufferSize int64
+	PipeBufferSize    int64
 }
 
-type rabbitConfig struct {
-	QueueName string
-	MaxShard  int32
-	URI       string
+type redisConfig struct {
+	Addrs string
 }
 
 type reqType struct {

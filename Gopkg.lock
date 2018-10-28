@@ -14,18 +14,6 @@
   version = "v1.6.2"
 
 [[projects]]
-  name = "git.aqq.me/go/lrucache"
-  packages = ["."]
-  revision = "568b3e7eaaefa1c76169e37a7afac477a4be4c79"
-  version = "v1.1"
-
-[[projects]]
-  name = "git.aqq.me/go/nanachi"
-  packages = ["."]
-  revision = "fe1288842e8dc104c45bd466fcd088e01b789895"
-  version = "v1.11.1"
-
-[[projects]]
   name = "git.aqq.me/go/retrier"
   packages = ["."]
   revision = "30bbe2f632db4a7a7157c94ede2cea6e98aaa261"
@@ -38,14 +26,29 @@
   version = "v0.3.1"
 
 [[projects]]
+  name = "github.com/go-redis/redis"
+  packages = [
+    ".",
+    "internal",
+    "internal/consistenthash",
+    "internal/hashtag",
+    "internal/pool",
+    "internal/proto",
+    "internal/singleflight",
+    "internal/util"
+  ]
+  revision = "b3d9bf10f6666b2ee5100a6f3f84f4caf3b4e37d"
+  version = "v6.14.2"
+
+[[projects]]
   name = "github.com/iph0/conf"
   packages = [
     ".",
     "envconf",
     "fileconf"
   ]
-  revision = "c8135274101587ea808bd86ebb163939f978aa6b"
-  version = "v1.3"
+  revision = "2449044059ba4b98e13ce80d15162e85de2d03d0"
+  version = "v1.4.3"
 
 [[projects]]
   name = "github.com/iph0/merger"
@@ -60,16 +63,22 @@
   version = "v1.1.5"
 
 [[projects]]
-  name = "github.com/kak-tus/corrie"
-  packages = ["message"]
-  revision = "b70f63dc29c15cc9728c7cb84c9a984180f41870"
-  version = "v0.4.3"
+  name = "github.com/kak-tus/ami"
+  packages = ["."]
+  revision = "5df77e7d1fcf22d2aa5b18e2277928a62c704c75"
+  version = "v0.1.5"
 
 [[projects]]
   name = "github.com/kak-tus/healthcheck"
   packages = ["."]
   revision = "5f3713b5d728cc0f1c0d5bbfbadb9bbf99e2576f"
   version = "v0.5.0"
+
+[[projects]]
+  name = "github.com/kak-tus/ruthie"
+  packages = ["message"]
+  revision = "1282ff32ef9c0eb0d483d90c95a2c71fea9ca000"
+  version = "v0.1.2"
 
 [[projects]]
   name = "github.com/mitchellh/mapstructure"
@@ -88,12 +97,6 @@
   packages = ["."]
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/streadway/amqp"
-  packages = ["."]
-  revision = "70e15c650864f4fc47f5d3c82ea117285480895d"
 
 [[projects]]
   name = "go.uber.org/atomic"
@@ -129,6 +132,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d650fb13ae404920ea564e3ddff504f2b33cd729518cccdaeee12a629317122a"
+  inputs-digest = "8f1874470fadad01de7f2311f8df3a3c1d4e9bc520265a3798f4c2d13b061a2f"
   solver-name = "gps-cdcl"
   solver-version = 1

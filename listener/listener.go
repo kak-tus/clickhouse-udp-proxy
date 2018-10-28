@@ -1,20 +1,19 @@
 package listener
 
 import (
-	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"time"
 
 	"git.aqq.me/go/app/appconf"
 	"git.aqq.me/go/app/applog"
 	"git.aqq.me/go/app/event"
-	"git.aqq.me/go/nanachi"
-	"git.aqq.me/go/retrier"
+	"github.com/go-redis/redis"
 	"github.com/iph0/conf"
 	jsoniter "github.com/json-iterator/go"
-	"github.com/kak-tus/corrie/message"
-	"github.com/streadway/amqp"
+	"github.com/kak-tus/ami"
+	"github.com/kak-tus/ruthie/message"
 )
 
 var lstn *Listener
@@ -30,10 +29,32 @@ func init() {
 				return err
 			}
 
+			addrs := strings.Split(cnf.Redis.Addrs, ",")
+
+			qu, err := ami.NewQu(
+				ami.Options{
+					Name:              "ruthie",
+					Consumer:          cnf.Consumer,
+					ShardsCount:       cnf.ShardsCount,
+					PrefetchCount:     cnf.PrefetchCount,
+					Block:             time.Second,
+					PendingBufferSize: cnf.PendingBufferSize,
+					PipeBufferSize:    cnf.PipeBufferSize,
+					PipePeriod:        time.Microsecond * 10,
+				},
+				&redis.ClusterOptions{
+					Addrs: addrs,
+				},
+			)
+			if err != nil {
+				return err
+			}
+
 			lstn = &Listener{
 				logger: applog.GetLogger().Sugar(),
 				m:      &sync.Mutex{},
 				config: cnf,
+				qu:     qu,
 			}
 
 			lstn.logger.Info("Started listener")
@@ -47,7 +68,7 @@ func init() {
 			lstn.logger.Info("Stop listener")
 			lstn.stop = true
 			lstn.m.Lock()
-			lstn.client.Close()
+			lstn.qu.Close()
 			lstn.logger.Info("Stopped listener")
 			return nil
 		},
@@ -61,48 +82,6 @@ func GetListener() *Listener {
 
 // Start listener
 func (l *Listener) Start() {
-	client, err := nanachi.NewClient(
-		nanachi.ClientConfig{
-			URI:       l.config.Rabbit.URI,
-			Heartbeat: time.Second * 15,
-			RetrierConfig: &retrier.Config{
-				RetryPolicy: []time.Duration{time.Second},
-			},
-		},
-	)
-
-	if err != nil {
-		l.logger.Panic(err)
-	}
-
-	dest := &nanachi.Destination{
-		RoutingKey: l.config.Rabbit.QueueName,
-		MaxShard:   l.config.Rabbit.MaxShard,
-		Declare: func(ch *amqp.Channel) error {
-			for i := 0; i <= int(l.config.Rabbit.MaxShard); i++ {
-				shardName := fmt.Sprintf("%s.%d", l.config.Rabbit.QueueName, i)
-
-				_, err := ch.QueueDeclare(shardName, true, false, false, false, nil)
-				if err != nil {
-					l.logger.Panic(err)
-				}
-			}
-
-			return nil
-		},
-	}
-
-	producer := client.NewSmartProducer(
-		nanachi.SmartProducerConfig{
-			Destinations:      []*nanachi.Destination{dest},
-			Mandatory:         true,
-			PendingBufferSize: 1000000,
-			Confirm:           true,
-		},
-	)
-
-	l.client = client
-
 	decoder := jsoniter.Config{UseNumber: true}.Froze()
 
 	conn, err := net.ListenPacket("udp", ":"+l.config.Port)
@@ -146,16 +125,7 @@ func (l *Listener) Start() {
 			continue
 		}
 
-		producer.Send(
-			nanachi.Publishing{
-				RoutingKey: l.config.Rabbit.QueueName,
-				Publishing: amqp.Publishing{
-					ContentType:  "text/plain",
-					Body:         body,
-					DeliveryMode: amqp.Persistent,
-				},
-			},
-		)
+		l.qu.Send(body)
 	}
 
 	conn.Close()
