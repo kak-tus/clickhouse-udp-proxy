@@ -2,7 +2,7 @@
 
 Simple UDP proxy for ClickHouse.
 
-It accepts UDP packets, send it to Redis Cluster in Ruthie format with Ami client. Then Ruthie write them to ClickHouse.
+It accepts UDP packets, send it to Redis Cluster with [Ruthie](https://github.com/kak-tus/ruthie). Then Ruthie write them to ClickHouse.
 
 Proxy role - run near some writer and accept metrics in UDP packets. That can be added at any code (sync or async) without any code refactoring.
 
@@ -15,6 +15,7 @@ PROXY_REDIS_ADDR=172.17.0.1:7000
 PROXY_SHARDS_COUNT=10
 PROXY_PENDING_BUFFER_SIZE=1000000
 PROXY_PIPE_BUFFER_SIZE=50000
+```
 
 ## Run
 
