@@ -6,75 +6,40 @@ import (
 	"sync"
 	"time"
 
-	"git.aqq.me/go/app/appconf"
-	"git.aqq.me/go/app/applog"
-	"git.aqq.me/go/app/event"
 	"github.com/go-redis/redis"
-	"github.com/iph0/conf"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/kak-tus/ami"
 	"github.com/kak-tus/ruthie/message"
+	"go.uber.org/zap"
 )
 
-var lstn *Listener
+func NewListener(cnf Config, log *zap.SugaredLogger) (*Listener, error) {
+	addrs := strings.Split(cnf.Redis.Addrs, ",")
 
-func init() {
-	event.Init.AddHandler(
-		func() error {
-			cnfMap := appconf.GetConfig()["listener"]
-
-			var cnf listenerConfig
-			err := conf.Decode(cnfMap, &cnf)
-			if err != nil {
-				return err
-			}
-
-			addrs := strings.Split(cnf.Redis.Addrs, ",")
-
-			pr, err := ami.NewProducer(
-				ami.ProducerOptions{
-					Name:              "ruthie",
-					ShardsCount:       cnf.ShardsCount,
-					PendingBufferSize: cnf.PendingBufferSize,
-					PipeBufferSize:    cnf.PipeBufferSize,
-					PipePeriod:        time.Microsecond * 10,
-				},
-				&redis.ClusterOptions{
-					Addrs: addrs,
-				},
-			)
-			if err != nil {
-				return err
-			}
-
-			lstn = &Listener{
-				logger: applog.GetLogger().Sugar(),
-				m:      &sync.Mutex{},
-				config: cnf,
-				pr:     pr,
-			}
-
-			lstn.logger.Info("Started listener")
-
-			return nil
+	pr, err := ami.NewProducer(
+		ami.ProducerOptions{
+			Name:              "ruthie",
+			ShardsCount:       cnf.ShardsCount,
+			PendingBufferSize: cnf.PendingBufferSize,
+			PipeBufferSize:    cnf.PipeBufferSize,
+			PipePeriod:        time.Microsecond * 10,
+		},
+		&redis.ClusterOptions{
+			Addrs: addrs,
 		},
 	)
+	if err != nil {
+		return nil, err
+	}
 
-	event.Stop.AddHandler(
-		func() error {
-			lstn.logger.Info("Stop listener")
-			lstn.stop = true
-			lstn.m.Lock()
-			lstn.pr.Close()
-			lstn.logger.Info("Stopped listener")
-			return nil
-		},
-	)
-}
+	lstn := &Listener{
+		logger: log,
+		m:      &sync.Mutex{},
+		config: cnf,
+		pr:     pr,
+	}
 
-// GetListener return instance
-func GetListener() *Listener {
-	return lstn
+	return lstn, nil
 }
 
 // Start listener
@@ -90,6 +55,8 @@ func (l *Listener) Start() {
 	var parsed reqType
 
 	l.m.Lock()
+
+	l.logger.Info("Started listener")
 
 	for {
 		if l.stop {
@@ -127,4 +94,14 @@ func (l *Listener) Start() {
 
 	conn.Close()
 	l.m.Unlock()
+}
+
+func (l *Listener) Stop() {
+	l.logger.Info("Stop listener")
+
+	l.stop = true
+	l.m.Lock()
+	l.pr.Close()
+
+	l.logger.Info("Stopped listener")
 }

@@ -10,13 +10,13 @@ import (
 // Listener object
 type Listener struct {
 	logger *zap.SugaredLogger
-	config listenerConfig
+	config Config
 	m      *sync.Mutex
 	pr     *ami.Producer
 	stop   bool
 }
 
-type listenerConfig struct {
+type Config struct {
 	Port              string
 	Redis             redisConfig
 	ShardsCount       int8

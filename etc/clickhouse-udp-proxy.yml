@@ -1,15 +1,6 @@
 healthcheck:
   listen: ':9000'
 
-log:
-  tag: clickhouse.udp-proxy
-  level: debug
-  output: stdsep
-  format: json
-  formatConfig:
-    colors: false
-    disableTimestamp: true
-
 listener:
   port: 9001
   redis:

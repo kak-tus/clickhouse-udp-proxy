@@ -1,14 +1,15 @@
-FROM golang:1.10.3-alpine3.8 AS build
+FROM golang:1.13.2-alpine3.10 AS build
 
-WORKDIR /go/src/github.com/kak-tus/clickhouse-udp-proxy
+WORKDIR /go/clickhouse-udp-proxy
 
+COPY *.go ./
+COPY go.mod .
+COPY go.sum .
 COPY listener ./listener
-COPY vendor ./vendor
-COPY main.go main.go
 
-RUN go install
+RUN go build -o /go/bin/clickhouse-udp-proxy
 
-FROM alpine:3.8
+FROM alpine:3.10
 
 RUN \
   adduser -DH user
