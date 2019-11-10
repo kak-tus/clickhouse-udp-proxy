@@ -46,5 +46,5 @@ Send example see at dev/test.pl
 
 ## Healthcheck
 
-Service listens at 9001 TCP port and response to HTTP queries with code 200 or
+Service listens at 9000 TCP port and response to HTTP queries with code 200 or
 code 500.
